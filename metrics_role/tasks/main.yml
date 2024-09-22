@@ -2,13 +2,12 @@
 # tasks/main.yml
 
 # Install Python and pip based on the package manager
-- name: Install Python and required libraries using package manager
+- name: Install required libraries using package manager
   block:
     # Install Python 3 and pip using the package manager
-    - name: Install Python 3 and pip using apt (for Debian-based systems)
+    - name: Install pip using apt (for Debian-based systems)
       apt:
         name:
-          - python3
           - python3-pip
           - python3-psutil
           - python3-prometheus-client
@@ -16,23 +15,13 @@
       become: true
       when: ansible_facts['pkg_mgr'] == "apt"
 
-    - name: Install Python 3 and pip using yum (for RedHat/CentOS systems)
+    - name: Install pip using yum (for RedHat/CentOS systems)
       yum:
         name:
-          - python3
           - python3-pip
         state: present
       become: true
       when: ansible_facts['pkg_mgr'] == "yum"
-
-    - name: Install Python 3 and pip using dnf (for Fedora)
-      dnf:
-        name:
-          - python3
-          - python3-pip
-        state: present
-      become: true
-      when: ansible_facts['pkg_mgr'] == "dnf"
 
     # For RedHat-based systems, manually install the libraries using pip3 (from the package manager)
     - name: Install psutil and prometheus_client via pip3
