@@ -1,0 +1,11 @@
+[Unit]
+Description=Metrics Exporter Service
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/metrics_exporter.py
+Restart=always
+User=root
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,75 @@
+---
+# tasks/main.yml
+
+# Install Python and pip based on the package manager
+- name: Install Python and required libraries using package manager
+  block:
+    # Install Python 3 and pip using the package manager
+    - name: Install Python 3 and pip using apt (for Debian-based systems)
+      apt:
+        name:
+          - python3
+          - python3-pip
+          - python3-psutil
+          - python3-prometheus-client
+        state: present
+      become: true
+      when: ansible_facts['pkg_mgr'] == "apt"
+
+    - name: Install Python 3 and pip using yum (for RedHat/CentOS systems)
+      yum:
+        name:
+          - python3
+          - python3-pip
+        state: present
+      become: true
+      when: ansible_facts['pkg_mgr'] == "yum"
+
+    - name: Install Python 3 and pip using dnf (for Fedora)
+      dnf:
+        name:
+          - python3
+          - python3-pip
+        state: present
+      become: true
+      when: ansible_facts['pkg_mgr'] == "dnf"
+
+    # For RedHat-based systems, manually install the libraries using pip3 (from the package manager)
+    - name: Install psutil and prometheus_client via pip3
+      pip:
+        name:
+          - psutil
+          - prometheus_client
+        executable: pip3
+      become: true
+      when: ansible_facts['pkg_mgr'] in ["yum", "dnf"]
+
+# Copy the metrics_exporter.py script to the target machine
+- name: Copy metrics_exporter.py to /usr/local/bin
+  copy:
+    src: metrics_exporter.py
+    dest: /usr/local/bin/metrics_exporter.py
+    mode: '0755'
+  become: true
+
+# Create the systemd service file for metrics exporter
+- name: Create metrics exporter systemd service file
+  template:
+    src: metrics_exporter.service.j2
+    dest: /etc/systemd/system/metrics_exporter.service
+  become: true
+
+# Reload systemd to apply changes
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: true
+  become: true
+
+# Enable and start metrics exporter service
+- name: Enable and start the metrics exporter service
+  systemd:
+    name: metrics_exporter
+    enabled: true
+    state: started
+  become: true
+

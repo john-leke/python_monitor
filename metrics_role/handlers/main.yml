@@ -1,0 +1,7 @@
+---
+- name: Restart metrics exporter service
+  systemd:
+    name: metrics_exporter
+    state: restarted
+  become: true
+
